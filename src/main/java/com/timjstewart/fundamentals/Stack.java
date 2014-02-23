@@ -13,6 +13,9 @@ public class Stack<T> {
 
    private int top = -1;
 
+   private int timesGrown = 0;
+   private int timesShrunk = 0;
+
    private static final int DEFAULT_CAPACITY = 16;
 
    public Stack(final int capacity) {
@@ -26,6 +29,7 @@ public class Stack<T> {
    public void push(T elem) {
       if (top >= stack.length - 1) {
          stack = Arrays.copyOf(stack, stack.length * 2);
+         timesGrown++;
       }
       stack[++top] = elem;
    }
@@ -37,26 +41,35 @@ public class Stack<T> {
       T result = stack[top];
       stack[top--] = null;
 
-      if (top < stack.length / 4) {
+      if (top > 0 && top < stack.length / 4) {
          stack = Arrays.copyOf(stack, stack.length / 2);
+         timesShrunk++;
       }
 
       return result;
    }
 
-   public static void main(String[] args) {
-      Stack<Integer> intStack = new Stack<>();
+   public void printStatistics() {
+      StdOut.printf("Grew %d times\nShrunk %d times\n", timesGrown, timesShrunk);
+   }
 
-      for (int n = 1; n <= 1024; n++)
+   public static void main(String[] args) {
+      Stack<Integer> intStack = new Stack<>(4);
+
+      final int SMALL = 1024;
+
+      for (int n = 1; n <= SMALL; n++)
          intStack.push(n);
 
-      for (int n = 1024; n > 0; n--)
+      for (int n = SMALL; n > 0; n--)
          assertEquals(n, (int) intStack.pop());
 
-      for (int n = 1; n <= 1024; n++)
+      final int BIG = 1_000_000;
+
+      for (int n = 1; n <= BIG; n++)
          intStack.push(n);
 
-      for (int n = 1024; n > 0; n--)
+      for (int n = BIG; n > 0; n--)
          assertEquals(n, (int) intStack.pop());
 
       try {
@@ -64,6 +77,8 @@ public class Stack<T> {
          fail("should have thrown Underflow exception");
       } catch (UnderflowException ex) {
       }
+
+      intStack.printStatistics();
 
       StdOut.println("Done");
    }
